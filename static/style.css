@@ -1,0 +1,41 @@
+body {
+    background: linear-gradient(to right, #b3d1ff, #cce6ff); /* Fundo com gradiente mais claro */
+}
+
+.container {
+    background: #fff; /* Fundo branco do formulário */
+    padding: 50px 40px; /* Espaçamento maior */
+    border-radius: 12px; /* Bordas arredondadas suaves */
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15); /* Sombra para profundidade */
+    max-width: 600px; /* Aumentei a largura máxima do formulário */
+}
+
+h1 {
+    font-size: 2.7rem; /* Tamanho do título */
+    color: #0056b3; /* Cor azul mais suave */
+    font-weight: bold;
+}
+
+p.lead {
+    color: #444; /* Cor sutil para o subtítulo */
+}
+
+.form-control {
+    border-radius: 50px; /* Borda arredondada nos inputs */
+    padding: 20px; /* Aumenta o espaço interno */
+    border: 2px solid #ddd; /* Borda suave */
+}
+
+.btn-primary {
+    background-color: #0056b3; /* Cor de fundo do botão */
+    border-color: #0056b3; /* Borda do botão */
+    border-radius: 50px; /* Borda arredondada no botão */
+    padding: 15px; /* Aumenta o espaço interno do botão */
+    font-size: 1.2rem; /* Tamanho maior do texto do botão */
+}
+
+.btn-primary:hover {
+    background-color: #004099; /* Efeito hover */
+    border-color: #004099; /* Borda no hover */
+}
+

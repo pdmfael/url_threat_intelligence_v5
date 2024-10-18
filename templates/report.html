@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório da URL</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .section {
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            color: #555;
+        }
+        .section p {
+            margin: 5px 0;
+        }
+        .results {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            background: #f9f9f9;
+        }
+        .malicious {
+            color: red;
+            font-weight: bold;
+        }
+        .progress-container {
+            width: 100%;
+            background: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        .progress-bar {
+            height: 20px;
+            transition: width 0.5s ease;
+            background-color: red; /* Cor inicial */
+        }
+        .engine-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .engine-item {
+            flex: 1 0 30%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #f0f0f0;
+            text-align: center;
+        }
+        .engine-alert {
+            color: red;
+            font-weight: bold;
+        }
+        .engine-suspicious {
+            color: orange;
+            font-weight: bold;
+        }
+        .button {
+            text-align: center;
+        }
+        .button a {
+            text-decoration: none;
+            color: white;
+            background-color: #4CAF50;
+            padding: 10px 20px;
+            border-radius: 5px;
+        }
+        .text-muted {
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Relatório da URL</h1>
+
+        <div class="section">
+            <h2>URL Consultada: <span style="font-weight: normal;">{{ report['URL'] }}</span></h2>
+        </div>
+
+        <div class="section">
+            <h2>Descrição da Análise</h2>
+            <div id="analysis-description">
+                <p>
+                    A análise da URL <strong>{{ report['URL'] }}</strong> revelou que o domínio associado é <strong>{{ report['Domain Info']['Domain'] }}</strong>.
+                    {% if report['Domain Info']['Registrador'] != 'Não disponível' %}
+                        Este domínio está registrado sob o registrador <strong>{{ report['Domain Info']['Registrador'] }}</strong>.
+                    {% endif %}
+                    {% if report['Domain Info']['Servidor DNS'] %}
+                        A URL utiliza os servidores DNS: <strong>{{ report['Domain Info']['Servidor DNS'] | join(', ') }}</strong>.
+                    {% endif %}
+                    {% if report['Domain Info']['Estado'] != 'Não disponível' %}
+                        O estado atual do domínio é <strong>{{ report['Domain Info']['Estado'] }}</strong>.
+                        {% if report['Domain Info']['Estado'] == 'clientTransferProhibited' %}
+                            O estado <strong>clientTransferProhibited</strong> indica que o domínio não pode ser transferido para outro registrador, ajudando a proteger o domínio contra transferências não autorizadas.
+                        {% elif report['Domain Info']['Estado'] == 'clientDeleteProhibited' %}
+                            O estado <strong>clientDeleteProhibited</strong> significa que o domínio não pode ser excluído pelo registrante, ou seja, o proprietário do domínio não tem permissão para deletá-lo diretamente. Essa configuração é geralmente aplicada para proteger o domínio contra exclusões acidentais ou maliciosas.
+                        {% elif report['Domain Info']['Estado'] == 'clientTransferProhibited clientDeleteProhibited' %}
+                            Os estados <strong>clientTransferProhibited</strong> e <strong>clientDeleteProhibited</strong> em conjunto garantem que o domínio não possa ser transferido para outro registrador e não pode ser excluído, assegurando que o domínio permaneça sob o controle do proprietário atual, evitando ações indesejadas.
+                        {% endif %}
+                    {% endif %}
+                    {% if report['Domain Info']['Data de Criação'] != 'Não disponível' %}
+                        A URL foi criada em <strong>{{ report['Domain Info']['Data de Criação'] }}</strong>.
+                    {% endif %}
+                    {% if report['Domain Info']['Data de Expiração'] != 'Não disponível' %}
+                        Ela está programada para expirar em <strong>{{ report['Domain Info']['Data de Expiração'] }}</strong>.
+                    {% endif %}
+                </p>
+                <p>
+                    Em relação à reputação da URL, foram feitas diversas avaliações de segurança. 
+                    Ela foi reportada como maliciosa <strong>{{ report['Reputation']['Positivos (maliciosos)'] }}</strong> vez{{ 'es' if report['Reputation']['Positivos (maliciosos)'] != 1 else '' }}.
+                    {% if report['Reputation']['Inofensivos'] > 0 %}
+                        Foi considerada inofensiva em <strong>{{ report['Reputation']['Inofensivos'] }}</strong> análises.
+                    {% endif %}
+                    {% if report['Reputation']['Suspeitos'] > 0 %}
+                        E apresentou <strong>{{ report['Reputation']['Suspeitos'] }}</strong> análise{{ 's' if report['Reputation']['Suspeitos'] != 1 else '' }} suspeita{{ 's' if report['Reputation']['Suspeitos'] != 1 else '' }}.
+                    {% endif %}
+                    Além disso, <strong>{{ report['Reputation']['Não Detectados'] }}</strong> análises não detectaram a URL como maliciosa.
+                </p>
+        
+                {% if malicious_engines %}
+                    <p>
+                        As engines que detectaram a URL como maliciosa incluem: <strong>{{ malicious_engines | join(', ') }}</strong>.
+                    </p>
+                {% endif %}
+        
+                {% if suspicious_engines %}
+                    <p>
+                        Já as engines que consideraram a URL suspeita são: <strong>{{ suspicious_engines | join(', ') }}</strong>.
+                    </p>
+                {% endif %}
+            </div>
+        
+            <!-- Botão para copiar o texto com ícone no canto direito -->
+            <button class="copy-button" onclick="copyToClipboard()">
+                <i class="fa fa-copy"></i> Copiar Descrição
+            </button>
+        </div>
+        
+        <script>
+            function copyToClipboard() {
+                const description = document.getElementById('analysis-description').innerText;
+                navigator.clipboard.writeText(description)
+                    .then(() => {
+                        alert('Descrição copiada para a área de transferência!');
+                    })
+                    .catch(err => {
+                        console.error('Erro ao copiar: ', err);
+                    });
+            }
+        </script>
+        
+        <style>
+            .copy-button {
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                background-color: #007bff;
+                color: white;
+                border: none;
+                padding: 10px 15px;
+                font-size: 14px;
+                cursor: pointer;
+                border-radius: 5px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: background-color 0.3s ease;
+            }
+        
+            .copy-button i {
+                margin-right: 5px;
+            }
+        
+            .copy-button:hover {
+                background-color: #0056b3;
+            }
+        
+            .section {
+                position: relative;
+                padding: 20px;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                margin-bottom: 20px;
+            }
+        
+            .section h2 {
+                margin-bottom: 15px;
+            }
+        </style>
+        
+        <!-- Adicionar ícone da FontAwesome (caso ainda não tenha adicionado no projeto) -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+        
+        
+        
+        
+        
+
+        <div class="section">
+            <div class="progress-container">
+                <div class="progress-bar" id="maliciousnessProgress" style="width: 0%;"></div>
+            </div>
+            <p id="progressText">0% maliciosa</p>
+        </div>
+
+        <div class="section">
+            <h2>Endereço IP</h2>
+            <div class="results">{{ report['IP'] }}</div>
+        </div>
+
+        <div class="section">
+            <h2>Informações de Domínio (WHOIS)</h2>
+            <div class="results">
+                <p><strong>Domínio:</strong> {{ report['Domain Info']['Domain'] }}</p>
+                <p><strong>Data de Criação:</strong> {{ report['Domain Info']['Data de Criação'] }}</p>
+                <p><strong>Data de Expiração:</strong> {{ report['Domain Info']['Data de Expiração'] }}</p>
+                <p><strong>Servidor DNS:</strong> {{ report['Domain Info']['Servidor DNS'] | join(', ') }}</p>
+                <p><strong>Registrador:</strong> {{ report['Domain Info']['Registrador'] }}</p>
+                <p><strong>Estado:</strong> {{ report['Domain Info']['Estado'] }}</p>
+                <p><strong>Informações Adicionais:</strong> {{ report['Domain Info']['Informações Adicionais'] }}</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Reputação VirusTotal</h2>
+            <p>A reputação da URL foi avaliada por diversas engines de segurança.</p>
+            
+            <div class="results">
+                <div style="display: flex; justify-content: space-between;">
+                    <div>
+                        <p><strong>Positivos (maliciosos):</strong></p>
+                        <p>{{ report['Reputation']['Positivos (maliciosos)'] }}</p>
+                    </div>
+                    <div>
+                        <p><strong>Inofensivos:</strong></p>
+                        <p>{{ report['Reputation']['Inofensivos'] }}</p>
+                    </div>
+                    <div>
+                        <p><strong>Suspeitos:</strong></p>
+                        <p>{{ report['Reputation']['Suspeitos'] }}</p>
+                    </div>
+                    <div>
+                        <p><strong>Não Detectados:</strong></p>
+                        <p>{{ report['Reputation']['Não Detectados'] }}</p>
+                    </div>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between;">
+                    <div>
+                        <p><strong>Timeout:</strong></p>
+                        <p>{{ report['Reputation']['Timeout'] }}</p>
+                    </div>
+                    <div>
+                        <p><strong>Categoria:</strong></p>
+                        <p>{{ report['Reputation']['Categoria'] }}</p>
+                    </div>
+                    <div>
+                        <p><strong>Última Análise:</strong></p>
+                        <p>{{ report['Reputation']['Última Análise'] }}</p>
+                    </div>
+                    <div>
+                        <p><strong>Total de Engines:</strong></p>
+                        <p>{{ report['Reputation']['Total de Engines que Analisaram'] }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Engines que Detectaram Algo</h2>
+            <div class="results engine-container">
+                {% set malicious_engines = [] %}
+                {% set suspicious_engines = [] %}
+                {% set harmless_engines = [] %}
+                {% for engine, result in report['Engines'].items() %}
+                    {% if result == 'malicious' %}
+                        {% set _ = malicious_engines.append(engine) %}
+                    {% elif result == 'suspicious' %}
+                        {% set _ = suspicious_engines.append(engine) %}
+                    {% else %}
+                        {% set _ = harmless_engines.append(engine) %}
+                    {% endif %}
+                {% endfor %}
+                
+                {% for engine in malicious_engines %}
+                    <div class="engine-item engine-alert">{{ engine }}: Malicioso</div>
+                {% endfor %}
+                
+                {% for engine in suspicious_engines %}
+                    <div class="engine-item engine-suspicious">{{ engine }}: Suspeito</div>
+                {% endfor %}
+                
+                {% for engine in harmless_engines %}
+                    <div class="engine-item">{{ engine }}: Inofensivo</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>AbuseIPDB</h2>
+            <div class="results">
+                <p><strong>IP:</strong> {{ report['AbuseIPDB']['IP'] }}</p>
+                <p><strong>Pontuação de Confiança:</strong> {{ report['AbuseIPDB']['Score de Abuso'] }}%</p>
+                <p><strong>Total de Relatórios:</strong> {{ report['AbuseIPDB']['Total de Relatos'] }}</p>
+                <p><strong>Último Relato:</strong> {{ report['AbuseIPDB']['Último Relato'] }}</p>
+        
+                <p><strong>Categorias de Abuso:</strong></p>
+                <ul>
+                    {% if report['AbuseIPDB']['Categorias'] %}
+                        {% for categoria in report['AbuseIPDB']['Categorias'] %}
+                            <li>{{ categoria }}</li>
+                        {% endfor %}
+                    {% else %}
+                        <li>Sem categorias de abuso relatadas.</li>
+                    {% endif %}
+                </ul>
+        
+                <p><strong>Histórico de Atividades Suspeitas:</strong></p>
+                <ul>
+                    {% if report['AbuseIPDB']['Histórico'] %}
+                        {% for item in report['AbuseIPDB']['Histórico'] %}
+                            <li><strong>Data:</strong> {{ item['Data'] }} - <strong>Categoria:</strong> {{ item['Categoria'] }}</li>
+                        {% endfor %}
+                    {% else %}
+                        <li>Sem histórico de atividades suspeitas.</li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="button">
+                <a href="{{ url_for('index') }}">Nova Pesquisa</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Atualiza a barra de progresso de acordo com o número de engines que detectaram como maliciosa
+        const totalEngines = {{ report['Reputation']['Total de Engines que Analisaram'] }};
+        const maliciousCount = {{ report['Reputation']['Positivos (maliciosos)'] }};
+        const progressPercentage = (maliciousCount / totalEngines) * 100;
+
+        const progressBar = document.getElementById('maliciousnessProgress');
+        const progressText = document.getElementById('progressText');
+
+        progressBar.style.width = progressPercentage + '%';
+        progressText.textContent = Math.round(progressPercentage) + '% maliciosa';
+    </script>
+</body>
+</html>

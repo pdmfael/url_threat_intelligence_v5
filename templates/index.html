@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inteligência de Ameaças - Consultar URL</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="static/style.css"> <!-- Seu arquivo CSS -->
+</head>
+<body>
+    <div class="d-flex justify-content-center align-items-center min-vh-100">
+        <div class="container text-center">
+            <h1 class="mb-4">Consulta de URL</h1>
+            <p class="lead mb-4">Verifique a reputação da URL informada em múltiplas fontes de inteligência de ameaças.</p>
+            <form action="/submit" method="POST">
+                <div class="form-group">
+                    <input type="text" id="url" name="url" class="form-control" placeholder="https://example.com" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Consultar</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
